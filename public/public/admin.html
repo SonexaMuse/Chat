@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Admin - Chat Monitor</title>
+<style>
+body{font-family:Arial;margin:12px}
+#msgs{height:70vh;overflow:auto;border:1px solid #ccc;padding:8px}
+.msg{margin-bottom:8px}
+.meta{color:#666;font-size:12px}
+</style>
+</head>
+<body>
+<h2>Admin — Live Chat Monitor</h2>
+<div id="msgs"></div>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const socket = io();
+const msgs = document.getElementById('msgs');
+
+
+function add(m){
+const d = document.createElement('div');
+d.className = 'msg';
+d.innerHTML = `<div><strong>${escapeHtml(m.user)}</strong> <span class="meta">${new Date(m.ts).toLocaleString()}</span></div><div>${escapeHtml(m.text)}</div>`;
+msgs.appendChild(d);
+msgs.scrollTop = msgs.scrollHeight;
+}
+
+
+function escapeHtml(s){
+return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+
+socket.on('connect', () => {
+socket.emit('register:admin');
+});
+
+
+socket.on('history', (h) => {
+h.slice(-500).forEach(add);
+});
+
+
+socket.on('chat:message', add);
+</script>
+</body>
+</html>
